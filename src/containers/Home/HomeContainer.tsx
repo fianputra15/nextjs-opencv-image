@@ -2,11 +2,10 @@
 
 // import Image from "nexst/image";
 import { PhotoIcon } from "@heroicons/react/24/solid";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import cv from "@techstark/opencv-js";
 import { CropModal } from "@/components";
 import { Area } from "react-easy-crop";
-// import { detectHaarFace } from "./helpers/processImage";
 
 export default function HomeContainer() {
   const [file, setFile] = useState<File | null | string>(null);
@@ -70,28 +69,54 @@ export default function HomeContainer() {
     e.preventDefault();
   };
 
-  const handleProcessImage = async (imgSrc: HTMLImageElement) => {
-    const img = cv.imread(imgSrc);
-    // window.img = img;
-    // to crop image
-    // Define the cropping rectangle
-    console.log(croppedImage, 'cropped');
-    const rect = new cv.Rect(
-      croppedImage?.x as number,
-      croppedImage?.y as number,
-      croppedImage?.width as number,
-      croppedImage?.height as number
-    );
-    // Crop the image
-    const cropImage = img.roi(rect);
-    // to gray scale
-    const imgGray = new cv.Mat();
-    cv.cvtColor(cropImage, imgGray, cv.COLOR_BGR2GRAY);
-    cv.imshow(grayImgRef.current as HTMLCanvasElement, imgGray);
-    // window.imgGray = imgGray;
+  const handleProcessImage = useCallback(async () => {
+    const canvas = document.createElement("canvas");
+    const uploadedImage = file;
+    if (uploadedImage) {
+      // Read the file as a Data URL
+      const dataUrl = uploadedImage as string;
 
-    imgGray.delete();
-  }
+      // Create an HTML image element to load the Data URL
+      const imageData = new Image();
+      imageData.src = dataUrl as string;
+
+      imageData.onload = () => {
+        canvas.width = imageData.width;
+        canvas.height = imageData.height;
+
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(imageData, 0, 0);
+
+        // Convert canvas data to ImageData
+        const imageResult = ctx?.getImageData(
+          0,
+          0,
+          imageData.width,
+          imageData?.height
+        );
+
+        // Create OpenCV Mat from ImageData
+        const imageProcessing = cv.matFromImageData(imageResult as ImageData);
+        const rect = new cv.Rect(
+          croppedImage?.x as number,
+          croppedImage?.y as number,
+          croppedImage?.width as number,
+          croppedImage?.height as number
+        );
+        // Crop the image
+        const cropImage = imageProcessing.roi(rect);
+        // to gray scale
+        const imgGray = new cv.Mat();
+        cv.cvtColor(cropImage, imgGray, cv.COLOR_BGR2GRAY);
+        console.log(imgGray);
+        cv.imshow(grayImgRef.current as HTMLCanvasElement, imgGray);
+        // window.imgGray = imgGray;
+
+        imgGray.delete();
+      };
+    }
+  }, [croppedImage, file]);
+
   const handleOpenModal = useCallback(() => {
     setIsModalOpen(true);
   }, []);
@@ -110,11 +135,26 @@ export default function HomeContainer() {
     handleOpenModal();
   }, [file, handleOpenModal]);
 
+  useEffect(() => {
+    if (!croppedImage) return;
+    handleProcessImage();
+  }, [croppedImage, handleProcessImage]);
+
+  const handleDownload = () => {
+    if (grayImgRef.current) {
+      const dataUrl = grayImgRef.current.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = "processed_image.png";
+      link.click();
+    }
+  };
+
   return (
     <div className="mx-auto px-4">
-      <main className="">
+      <main>
         <h1 className="text-center text-2xl">OPENCV Image Uploader</h1>
-        <section className="lg:w-[400px] sm:w-full mx-auto mt-4">
+        <section className="lg:w-[400px] md:w-[400px] sm:w-full mx-auto mt-4">
           <form>
             <div>
               <CropModal
@@ -133,16 +173,8 @@ export default function HomeContainer() {
                 <div
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10 relative lg:w-[400px] sm:w-full h-[200px]"
+                  className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10 relative lg:w-[400px] md:w-[400px] sm:w-full h-[200px]"
                 >
-                  {/* {croppedImage && (
-                    <img
-                      className="opacity-30 object-cover"
-                      src={file}
-                      alt={file?.name ?? ""}
-                    />
-                  )} */}
-
                   <div className="text-center">
                     <PhotoIcon
                       aria-hidden="true"
@@ -179,35 +211,30 @@ export default function HomeContainer() {
               <p className="text-sm text-red-500">{errMsg}</p>
             </div>
           </form>
-        </section>
-        <section className="w-[400px] mx-auto mt-4">
-          <h3>Result</h3>
-          <div>
-            <div style={{ margin: "10px" }}>Original </div>
-            {croppedImage && file && (
-              <div className="w-[400px] h-[400px] relative">
-                <img
-                  src={file as string}
-                  onLoad={
-                    (e: React.SyntheticEvent<HTMLImageElement, Event>) =>
-                      handleProcessImage(e.currentTarget)
-                  }
-                  alt="filtering"
-                />
-              </div>
-            )}
-          </div>
-          <div>
-            <div style={{ margin: "10px" }}>After</div>
-            <canvas ref={grayImgRef} />
-          </div>
           <div className="flex">
             <button
+              onClick={handleDownload}
               type="submit"
               className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 mt-4 ml-auto"
             >
               Download
             </button>
+          </div>
+        </section>
+        <section className="w-[400px] mx-auto mt-4">
+          <div>
+            {croppedImage && file && (
+              <>
+                <div style={{ margin: "10px" }}>Original </div>
+                <div className="w-[400px] h-[200px] overflow-scroll">
+                  <img src={file as string} alt="filtering" />
+                </div>
+              </>
+            )}
+          </div>
+          {croppedImage && <div style={{ margin: "10px" }}>After</div>}
+          <div className="w-[400px] h-[200px] overflow-scroll">
+            <canvas ref={grayImgRef} />
           </div>
         </section>
       </main>

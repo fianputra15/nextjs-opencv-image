@@ -40,7 +40,7 @@ const CropModal: React.FC<CropModalProps> = ({ imageSrc, isOpen, onClose, onCrop
 
   return (
     <Modal isOpen={isOpen} onRequestClose={onClose} contentLabel="Crop Modal">
-      <div style={{ position: 'relative', width: "400px", height: "400px" }}>
+      <div style={{ position: 'relative', width: "auto", height: "400px" }}>
         <Cropper
           image={imageSrc}
           crop={crop}
