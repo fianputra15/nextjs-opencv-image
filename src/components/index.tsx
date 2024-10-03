@@ -1,5 +1,6 @@
 import CropModal from "./CropModal";
-
+import Button from "./Button";
 export {
-    CropModal
+    CropModal,
+    Button
 }

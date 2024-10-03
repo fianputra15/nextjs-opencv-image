@@ -2,9 +2,10 @@
 
 // import Image from "nexst/image";
 import { PhotoIcon } from "@heroicons/react/24/solid";
+import { ScissorsIcon } from "@heroicons/react/24/solid";
 import { useState, useRef, useCallback, useEffect } from "react";
 import cv from "@techstark/opencv-js";
-import { CropModal } from "@/components";
+import { Button, CropModal } from "@/components";
 import { Area } from "react-easy-crop";
 
 export default function HomeContainer() {
@@ -28,6 +29,22 @@ export default function HomeContainer() {
     },
     []
   );
+
+  const handleClearImage = () => {
+    setFile(null)
+    setErrMsg(null)
+    setCroppedImage(null)
+    
+    // Clear canvas for filtered image
+    const canvas = grayImgRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Gunakan clearRect untuk menghapus semua konten di canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+  }
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,9 +125,7 @@ export default function HomeContainer() {
         // to gray scale
         const imgGray = new cv.Mat();
         cv.cvtColor(cropImage, imgGray, cv.COLOR_BGR2GRAY);
-        console.log(imgGray);
         cv.imshow(grayImgRef.current as HTMLCanvasElement, imgGray);
-        // window.imgGray = imgGray;
 
         imgGray.delete();
       };
@@ -173,7 +188,7 @@ export default function HomeContainer() {
                 <div
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10 relative lg:w-[400px] md:w-[400px] sm:w-full h-[200px]"
+                  className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10  lg:w-[400px] md:w-[400px] sm:w-full h-[200px] "
                 >
                   <div className="text-center">
                     <PhotoIcon
@@ -203,7 +218,11 @@ export default function HomeContainer() {
                         </p>
                       </>
                     ) : (
-                      <span>Uploaded</span>
+                      <div className="flex flex-col">
+                           <span>Uploaded</span>
+                           <Button variant="fill" type="button" onClick={handleClearImage} className="text-black text-sm font-bold">Clear</Button>
+                      </div>
+                     
                     )}
                   </div>
                 </div>
@@ -211,14 +230,24 @@ export default function HomeContainer() {
               <p className="text-sm text-red-500">{errMsg}</p>
             </div>
           </form>
-          <div className="flex">
-            <button
+          <div className="flex justify-end gap-2 mt-4">
+            <Button
+              variant="fill"
+              onClick={handleOpenModal}
+              type="submit"
+              className="bg-gray-900 hover:bg-gray-950  flex gap-2 items-center"
+            >
+              <ScissorsIcon
+                aria-hidden="true"
+                className="mx-auto h-4 w-4 text-gray-300"
+                /> Crop
+            </Button>
+            <Button
               onClick={handleDownload}
               type="submit"
-              className="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 mt-4 ml-auto"
-            >
+              variant="fill">
               Download
-            </button>
+            </Button>
           </div>
         </section>
         <section className="w-[400px] mx-auto mt-4">

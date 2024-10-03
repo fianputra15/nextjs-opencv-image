@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
 import Modal from 'react-modal';
 import { Area } from 'react-easy-crop';
+import {Button} from '@/components'
 
 interface CropModalProps {
   imageSrc: string;
@@ -24,7 +25,7 @@ const CropModal: React.FC<CropModalProps> = ({ imageSrc, isOpen, onClose, onCrop
   };
 
   const onCropCompleteHandler = useCallback(
-    (croppedArea: Area, croppedAreaPixels: Area) => {
+    (cropppedArea: Area, croppedAreaPixels: Area) => {
       setCroppedAreaPixels(croppedAreaPixels);
     },
     []
@@ -39,7 +40,7 @@ const CropModal: React.FC<CropModalProps> = ({ imageSrc, isOpen, onClose, onCrop
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={onClose} contentLabel="Crop Modal">
+    <Modal isOpen={isOpen} onRequestClose={onClose} contentLabel="Crop Modal" className="crop-modal lg:w-[600px] md:w-[600px] sm:w-11/12">
       <div style={{ position: 'relative', width: "auto", height: "400px" }}>
         <Cropper
           image={imageSrc}
@@ -52,8 +53,8 @@ const CropModal: React.FC<CropModalProps> = ({ imageSrc, isOpen, onClose, onCrop
         />
       </div>
       <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'space-between' }}>
-        <button onClick={onClose}>Cancel</button>
-        <button onClick={handleCrop}>Crop</button>
+        <Button variant='text' onClick={onClose}>Cancel</Button>
+        <Button variant='fill' onClick={handleCrop}>Crop</Button>
       </div>
     </Modal>
   );
