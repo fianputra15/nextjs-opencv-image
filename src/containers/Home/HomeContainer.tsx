@@ -1,8 +1,11 @@
 "use client";
 
 // import Image from "nexst/image";
-import { PhotoIcon } from "@heroicons/react/24/solid";
-import { ScissorsIcon } from "@heroicons/react/24/solid";
+import {
+  PhotoIcon,
+  ScissorsIcon,
+  XCircleIcon,
+} from "@heroicons/react/24/solid";
 import { useState, useRef, useCallback, useEffect } from "react";
 import cv from "@techstark/opencv-js";
 import { Button, CropModal } from "@/components";
@@ -31,20 +34,20 @@ export default function HomeContainer() {
   );
 
   const handleClearImage = () => {
-    setFile(null)
-    setErrMsg(null)
-    setCroppedImage(null)
-    
+    setFile(null);
+    setErrMsg(null);
+    setCroppedImage(null);
+
     // Clear canvas for filtered image
     const canvas = grayImgRef.current;
     if (canvas) {
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (ctx) {
         // Gunakan clearRect untuk menghapus semua konten di canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
-  }
+  };
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -63,24 +66,27 @@ export default function HomeContainer() {
     [handleImageUpload]
   );
 
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    // Check if there are files in the drop event
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      // Extract the files from the drop event
-      const fileList = e.dataTransfer.files;
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      // Check if there are files in the drop event
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        // Extract the files from the drop event
+        const fileList = e.dataTransfer.files;
 
-      // Create a synthetic `ChangeEvent` object
-      const syntheticEvent = {
-        target: {
-          files: fileList,
-        },
-      } as React.ChangeEvent<HTMLInputElement>;
+        // Create a synthetic `ChangeEvent` object
+        const syntheticEvent = {
+          target: {
+            files: fileList,
+          },
+        } as React.ChangeEvent<HTMLInputElement>;
 
-      // Call `handleImageUpload` with the synthetic event
-      handleImageUpload(syntheticEvent);
-    }
-  };
+        // Call `handleImageUpload` with the synthetic event
+        handleImageUpload(syntheticEvent);
+      }
+    },
+    [handleImageUpload]
+  );
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -168,7 +174,7 @@ export default function HomeContainer() {
   return (
     <div className="mx-auto px-4">
       <main>
-        <h1 className="text-center text-2xl">OPENCV Image Uploader</h1>
+        <h1 className="text-center text-2xl">Image Adjustment</h1>
         <section className="lg:w-[400px] md:w-[400px] sm:w-full mx-auto mt-4">
           <form>
             <div>
@@ -219,10 +225,20 @@ export default function HomeContainer() {
                       </>
                     ) : (
                       <div className="flex flex-col">
-                           <span>Uploaded</span>
-                           <Button variant="fill" type="button" onClick={handleClearImage} className="text-black text-sm font-bold">Clear</Button>
+                        <span>Uploaded</span>
+                        <Button
+                          variant="text"
+                          type="button"
+                          onClick={handleClearImage}
+                          className="text-sm font-bold flex items-center gap-2"
+                        >
+                          <XCircleIcon
+                            aria-hidden="true"
+                            className="mx-auto h-6 w-6 text-black"
+                          />
+                          Clear
+                        </Button>
                       </div>
-                     
                     )}
                   </div>
                 </div>
@@ -234,18 +250,22 @@ export default function HomeContainer() {
             <Button
               variant="fill"
               onClick={handleOpenModal}
-              type="submit"
+              type="button"
+              disabled={!!!file}
               className="bg-gray-900 hover:bg-gray-950  flex gap-2 items-center"
             >
               <ScissorsIcon
                 aria-hidden="true"
                 className="mx-auto h-4 w-4 text-gray-300"
-                /> Crop
+              />{" "}
+              Crop
             </Button>
             <Button
               onClick={handleDownload}
-              type="submit"
-              variant="fill">
+              type="button"
+              disabled={!!!file}
+              variant="fill"
+            >
               Download
             </Button>
           </div>
