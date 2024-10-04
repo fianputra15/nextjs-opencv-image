@@ -5,6 +5,7 @@ import {
   PhotoIcon,
   ScissorsIcon,
   XCircleIcon,
+  DocumentArrowDownIcon
 } from "@heroicons/react/24/solid";
 import { useState, useRef, useCallback, useEffect } from "react";
 import cv from "@techstark/opencv-js";
@@ -194,7 +195,8 @@ export default function HomeContainer() {
                 <div
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10  lg:w-[400px] md:w-[400px] sm:w-full h-[200px] "
+       
+                  className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 px-6 py-10  lg:w-[400px] md:w-[400px] sm:w-full h-[200px] relative"
                 >
                   <div className="text-center">
                     <PhotoIcon
@@ -210,6 +212,7 @@ export default function HomeContainer() {
                           >
                             <span>Upload a file</span>
                             <input
+                              accept="image/png, image/jpeg, image/jpg"
                               onChange={handleFileChange}
                               id="file-upload"
                               name="file-upload"
@@ -263,9 +266,14 @@ export default function HomeContainer() {
             <Button
               onClick={handleDownload}
               type="button"
+              className="flex gap-2 items-center"
               disabled={!!!file}
               variant="fill"
             >
+              <DocumentArrowDownIcon
+                aria-hidden="true"
+                className="mx-auto h-4 w-4 text-white"
+              />
               Download
             </Button>
           </div>
