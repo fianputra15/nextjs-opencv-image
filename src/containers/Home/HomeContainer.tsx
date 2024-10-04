@@ -34,7 +34,7 @@ export default function HomeContainer() {
     []
   );
 
-  const handleClearImage = () => {
+  const handleClearImage = useCallback(() => {
     setFile(null);
     setErrMsg(null);
     setCroppedImage(null);
@@ -48,7 +48,7 @@ export default function HomeContainer() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
-  };
+  }, []);
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,9 +89,9 @@ export default function HomeContainer() {
     [handleImageUpload]
   );
 
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-  };
+  }, []);
 
   const handleProcessImage = useCallback(async () => {
     const canvas = document.createElement("canvas");
@@ -162,7 +162,7 @@ export default function HomeContainer() {
     handleProcessImage();
   }, [croppedImage, handleProcessImage]);
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     if (grayImgRef.current) {
       const dataUrl = grayImgRef.current.toDataURL("image/png");
       const link = document.createElement("a");
@@ -170,7 +170,7 @@ export default function HomeContainer() {
       link.download = "processed_image.png";
       link.click();
     }
-  };
+  }, []);
 
   return (
     <div className="mx-auto px-4">
